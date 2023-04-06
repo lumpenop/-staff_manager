@@ -1,47 +1,95 @@
 <script lang="ts">
-  import svelteLogo from './assets/svelte.svg'
-  import viteLogo from '/vite.svg'
-  import Counter from './lib/Counter.svelte'
+  import { Datepicker } from 'svelte-calendar';
+  import date from "./utils/date";
+  const tableHeads = ['index', '이름','입사일', '남은 연차', '총 연차', '사용 연차', '사용 일']
+  const tableDefaultBody = [{index: 1, name: '김승원', date: '2022-08-17', remain: 0, total: 0, used:0, usedDate: 'none'}]
+  const me = tableDefaultBody[0]
+
+  let isModalOn = false
+  let classification = 0
+  let selectedClassification = 0
+
+  const handleModalOn = () => {
+    isModalOn = !isModalOn
+  }
+
+  const handleClassifyCation = (index) => {
+    classification = index
+    selectedClassification = index
+  }
+  me.total = date.workingMonth(me.date)
+
+
+  // 1년 이하: 입사일 17일 인 경우 다음달 17일 부터 매 달 17일 마다 연차 1개씩 발생
+  //  12월 까지 총 11개
+  // 1년 초과: 근무 기간 1년 초과된 시점에 연간 80% 이상 출근에 15일 발생
 </script>
 
 <main>
-  <div>
-    <a href="https://vitejs.dev" target="_blank" rel="noreferrer">
-      <img src={viteLogo} class="logo" alt="Vite Logo" />
-    </a>
-    <a href="https://svelte.dev" target="_blank" rel="noreferrer">
-      <img src={svelteLogo} class="logo svelte" alt="Svelte Logo" />
-    </a>
-  </div>
-  <h1>Vite + Svelte</h1>
+  <section>
+    <div>TODAY: {date.getNowDate()}</div>
 
-  <div class="card">
-    <Counter />
-  </div>
-
-  <p>
-    Check out <a href="https://github.com/sveltejs/kit#readme" target="_blank" rel="noreferrer">SvelteKit</a>, the official Svelte app framework powered by Vite!
-  </p>
-
-  <p class="read-the-docs">
-    Click on the Vite and Svelte logos to learn more
-  </p>
+    <table>
+      <thead>
+        <tr>
+          {#each tableHeads as th}
+            <th>{th}</th>
+          {/each}
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          {#each tableDefaultBody as td}
+            <td>{td.index}</td>
+            <td>{td.name}</td>
+            <td>{td.date}</td>
+            <td>{td.remain}</td>
+            <td>{td.total}</td>
+            <td>{td.used}</td>
+            <td>{td.usedDate}</td>
+            <div>
+              <button on:click={handleModalOn}>{isModalOn ? '추가 완료' : '추가'}</button>
+            </div>
+          {/each}
+        </tr>
+      </tbody>
+    </table>
+    {#if isModalOn}
+      <div class="backdrop" class:promo={true}>
+        <div class="modal">
+          <div>
+            <Datepicker start={date.getNow()} />
+            <div style="margin-top: 18px">
+              {#each ['연차', '반차'] as item, index}
+                <button style={ `background: ${selectedClassification === index ? 'black' : 'gray'}`}
+                  on:click={() => handleClassifyCation(index)}
+                >{item}</button>
+              {/each}
+            </div>
+        </div>
+          <div style="margin-top: 6px"><button>사용하기</button></div>
+        </div>
+      </div>
+    {/if}
+  </section>
 </main>
 
 <style>
-  .logo {
-    height: 6em;
-    padding: 1.5em;
-    will-change: filter;
-    transition: filter 300ms;
-  }
-  .logo:hover {
-    filter: drop-shadow(0 0 2em #646cffaa);
-  }
-  .logo.svelte:hover {
-    filter: drop-shadow(0 0 2em #ff3e00aa);
-  }
-  .read-the-docs {
-    color: #888;
-  }
+    .modal {
+        padding: 10px;
+        border-radius: 10px;
+        max-width: 400px;
+        margin: 10% auto;
+        text-align: center;
+        background: white;
+    }
+
+    .promo .modal {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background: crimson;
+        color: white;
+    }
 </style>
